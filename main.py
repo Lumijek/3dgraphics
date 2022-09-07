@@ -10,7 +10,7 @@ from spaces import CubeScreenTransformer
 from shapes import Cube
 from pygame.gfxdraw import pixel
 
-WIDTH, HEIGHT = 800, 800
+WIDTH, HEIGHT = 1000, 1000
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 font = pygame.font.SysFont("Arial", 18, bold=True)
@@ -33,7 +33,7 @@ def fps_counter(screen, clock, font):
     fps_t = font.render(fps, 1, pygame.Color("RED"))
     screen.blit(fps_t, (4, 2))
 
-surf = pygame.image.load("images/test.png").convert_alpha()
+surf = pygame.image.load("images/eye.png").convert_alpha()
 surf = pygame.transform.smoothscale(surf, (100, 100))
 
 def compose_frame(screen, cube, theta_x, theta_y, theta_z, offset_z):

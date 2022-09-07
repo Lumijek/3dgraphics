@@ -2,6 +2,9 @@ import numpy as np
 import pygame
 import sys
 import math
+from pprint import pprint
+
+np.set_printoptions(suppress=True)
 
 class Graphics:
     def __init__(self, screen):
@@ -57,6 +60,7 @@ class Graphics:
             if v2[0] < v1[0]:
                 v1, v2 = v2, v1
             self.draw_flat_bottom_textured_triangle(v0, v1, v2, texture)
+
         else:
             alpha_split = (v1[1] - v0[1]) / (v2[1] - v0[1])
             vi = self.interpolate_to(v0, v2, alpha_split)
@@ -105,7 +109,6 @@ class Graphics:
             surf[x_start[i] : x_end[i], y] = c
         del surf
 
-
     def draw_flat_top_textured_triangle(self, v0, v1, v2, texture):
         m0 = (v2[0] - v0[0]) / (v2[1] - v0[1])
         m1 = (v2[0] - v1[0]) / (v2[1] - v1[1])
@@ -113,9 +116,9 @@ class Graphics:
         y_start = int(np.ceil(v0[1] - 0.5))
         y_end = int(np.ceil(v2[1] - 0.5))
 
-        tcEdgeL = v0[3:]
-        tcEdgeR = v1[3:]
-        tcBottom = v2[3:]
+        tcEdgeL = v0[3:].copy()
+        tcEdgeR = v1[3:].copy()
+        tcBottom = v2[3:].copy()
 
         tcEdgeStepL = (tcBottom - tcEdgeL) / (v2[1] - v0[1])
         tcEdgeStepR = (tcBottom - tcEdgeR) / (v2[1] - v1[1])
@@ -123,7 +126,7 @@ class Graphics:
         tcEdgeL += tcEdgeStepL * (y_start + 0.5 - v1[1])
         tcEdgeR += tcEdgeStepR * (y_start + 0.5 - v1[1])
         tcEdgeL = tcEdgeL + np.arange(0, y_end - y_start)[:, None] * tcEdgeStepL
-        tcEdgeR = tcEdgeL + np.arange(0, y_end - y_start)[:, None] * tcEdgeStepR
+        tcEdgeR = tcEdgeR + np.arange(0, y_end - y_start)[:, None] * tcEdgeStepR
 
         tex_width = texture.get_width()
         tex_height = texture.get_height()
@@ -144,8 +147,8 @@ class Graphics:
         tex_surf = pygame.surfarray.pixels3d(texture)
         for i, y in enumerate(range(y_start, y_end)):
             t_pixel = tc[i] + np.arange(0, x_end[i] - x_start[i])[:, None] * tc_scan_step[i]
-            t_pixel[:, 0] = np.clip(t_pixel[:, 0] * tex_width, 0, tex_clamp_x)
-            t_pixel[:, 1] = np.clip(t_pixel[:, 1] * tex_height, 0, tex_clamp_y)
+            t_pixel[:, 0] = t_pixel[:, 0] * tex_width - 0.000001
+            t_pixel[:, 1] = t_pixel[:, 1] * tex_height - 0.000001
             t_pixel = t_pixel.astype(int)
             surf[x_start[i]:x_end[i], y] = tex_surf[t_pixel[:, 0], t_pixel[:, 1]]
         del surf
@@ -158,10 +161,10 @@ class Graphics:
         y_start = int(np.ceil(v0[1] - 0.5))
         y_end = int(np.ceil(v2[1] - 0.5))
 
-        tcEdgeL = v0[3:]
-        tcEdgeR = v0[3:]
-        tcBottomL = v1[3:]
-        tcBottomR = v2[3:]
+        tcEdgeL = v0[3:].copy()
+        tcEdgeR = v0[3:].copy()
+        tcBottomL = v1[3:].copy()
+        tcBottomR = v2[3:].copy()
 
         tcEdgeStepL = (tcBottomL - tcEdgeL) / (v1[1] - v0[1])
         tcEdgeStepR = (tcBottomR - tcEdgeR) / (v2[1] - v0[1])
@@ -169,7 +172,7 @@ class Graphics:
         tcEdgeL += tcEdgeStepL * (y_start + 0.5 - v0[1])
         tcEdgeR += tcEdgeStepR * (y_start + 0.5 - v0[1])
         tcEdgeL = tcEdgeL + np.arange(0, y_end - y_start)[:, None] * tcEdgeStepL
-        tcEdgeR = tcEdgeL + np.arange(0, y_end - y_start)[:, None] * tcEdgeStepR
+        tcEdgeR = tcEdgeR + np.arange(0, y_end - y_start)[:, None] * tcEdgeStepR
 
         tex_width = texture.get_width()
         tex_height = texture.get_height()
@@ -185,13 +188,12 @@ class Graphics:
         tc_scan_step = (tcEdgeR - tcEdgeL) / (px1 - px0)[:, None]
 
         tc = tcEdgeL + tc_scan_step * (x_start + 0.5 - px0)[:, None]
-
         surf = pygame.surfarray.pixels3d(self.screen)
         tex_surf = pygame.surfarray.pixels3d(texture)
         for i, y in enumerate(range(y_start, y_end)):
             t_pixel = tc[i] + np.arange(0, x_end[i] - x_start[i])[:, None] * tc_scan_step[i]
-            t_pixel[:, 0] = np.clip(t_pixel[:, 0] * tex_width, 0, tex_clamp_x)
-            t_pixel[:, 1] = np.clip(t_pixel[:, 1] * tex_height, 0, tex_clamp_y)
+            t_pixel[:, 0] = t_pixel[:, 0] * tex_width - 0.000001
+            t_pixel[:, 1] = t_pixel[:, 1] * tex_height - 0.000001
             t_pixel = t_pixel.astype(int)
             surf[x_start[i]:x_end[i], y] = tex_surf[t_pixel[:, 0], t_pixel[:, 1]]
         del surf
