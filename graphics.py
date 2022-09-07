@@ -56,6 +56,7 @@ class Graphics:
             if v1[0] < v0[0]:
                 v0, v1 = v1, v0
             self.draw_flat_top_textured_triangle(v0, v1, v2, texture)
+
         elif v1[1] == v2[1]:
             if v2[0] < v1[0]:
                 v1, v2 = v2, v1
@@ -147,12 +148,13 @@ class Graphics:
         tex_surf = pygame.surfarray.pixels3d(texture)
         for i, y in enumerate(range(y_start, y_end)):
             t_pixel = tc[i] + np.arange(0, x_end[i] - x_start[i])[:, None] * tc_scan_step[i]
-            t_pixel[:, 0] = t_pixel[:, 0] * tex_width - 0.000001
-            t_pixel[:, 1] = t_pixel[:, 1] * tex_height - 0.000001
+            t_pixel[:, 0] = t_pixel[:, 0] * tex_width % tex_clamp_x
+            t_pixel[:, 1] = t_pixel[:, 1] * tex_height % tex_clamp_y
             t_pixel = t_pixel.astype(int)
             surf[x_start[i]:x_end[i], y] = tex_surf[t_pixel[:, 0], t_pixel[:, 1]]
         del surf
         del tex_surf
+
 
     def draw_flat_bottom_textured_triangle(self, v0, v1, v2, texture):
         m0 = (v1[0] - v0[0]) / (v1[1] - v0[1])
@@ -192,8 +194,8 @@ class Graphics:
         tex_surf = pygame.surfarray.pixels3d(texture)
         for i, y in enumerate(range(y_start, y_end)):
             t_pixel = tc[i] + np.arange(0, x_end[i] - x_start[i])[:, None] * tc_scan_step[i]
-            t_pixel[:, 0] = t_pixel[:, 0] * tex_width - 0.000001
-            t_pixel[:, 1] = t_pixel[:, 1] * tex_height - 0.000001
+            t_pixel[:, 0] = t_pixel[:, 0] * tex_width  % tex_clamp_x
+            t_pixel[:, 1] = t_pixel[:, 1] * tex_height % tex_clamp_y
             t_pixel = t_pixel.astype(int)
             surf[x_start[i]:x_end[i], y] = tex_surf[t_pixel[:, 0], t_pixel[:, 1]]
         del surf

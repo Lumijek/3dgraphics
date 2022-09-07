@@ -7,10 +7,10 @@ import pygame
 from graphics import Graphics
 from matrix import *
 from spaces import CubeScreenTransformer
-from shapes import Cube
+from shapes import Cube, CubeFolded, CubeFoldedWrapped
 from pygame.gfxdraw import pixel
 
-WIDTH, HEIGHT = 1000, 1000
+WIDTH, HEIGHT = 900, 900
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 font = pygame.font.SysFont("Arial", 18, bold=True)
