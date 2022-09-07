@@ -7,7 +7,7 @@ import pygame
 from graphics import Graphics
 from matrix import *
 from spaces import CubeScreenTransformer
-from shapes import Cube, CubeFolded, CubeFoldedWrapped
+from shapes import Cube, CubeFolded, CubeFoldedWrapped, CubeSkinned
 from pygame.gfxdraw import pixel
 
 WIDTH, HEIGHT = 900, 900
@@ -17,7 +17,7 @@ font = pygame.font.SysFont("Arial", 18, bold=True)
 screen.fill("RED")
 gfx = Graphics(screen)
 cst = CubeScreenTransformer(WIDTH, HEIGHT)
-cube = Cube(1, [0, 0, 0])
+cube = CubeSkinned(1)
 
 
 def wrap_angle(theta):
@@ -33,8 +33,8 @@ def fps_counter(screen, clock, font):
     fps_t = font.render(fps, 1, pygame.Color("RED"))
     screen.blit(fps_t, (4, 2))
 
-surf = pygame.image.load("images/eye.png").convert_alpha()
-surf = pygame.transform.smoothscale(surf, (100, 100))
+surf = pygame.image.load("images/dice_skin.png").convert_alpha()
+print(surf.get_width(), surf.get_height())
 
 def compose_frame(screen, cube, theta_x, theta_y, theta_z, offset_z):
     triangles = cube.get_textured_triangles()
