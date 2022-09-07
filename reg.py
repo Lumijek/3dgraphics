@@ -33,34 +33,47 @@ def fps_counter(screen, clock, font):
     fps_t = font.render(fps, 1, pygame.Color("RED"))
     screen.blit(fps_t, (4, 2))
 
-surf = pygame.image.load("images/test.png").convert_alpha()
-surf = pygame.transform.smoothscale(surf, (100, 100))
+
 
 def compose_frame(screen, cube, theta_x, theta_y, theta_z, offset_z):
-    triangles = cube.get_textured_triangles()
+    colors = [
+        (255, 255, 255),
+        (0, 0, 255),
+        (0, 100, 100),
+        (211, 211, 211),
+        (0, 255, 0),
+        (255, 0, 255),
+        (190, 190, 190),
+        (255, 0, 0),
+        (255, 255, 0),
+        (255, 255, 255),
+        (0, 0, 255),
+        (0, 100, 100),
+    ]
+    triangles = cube.get_triangles()
 
     rot_matrix = rotation_x(theta_x) @ rotation_y(theta_y) @ rotation_z(theta_z)
 
     for i, v in enumerate(triangles.vertices):
-        v = rot_matrix.dot(v[:3])
+        v = rot_matrix.dot(v)
         v += [0, 0, offset_z]
-        triangles.vertices[i][:3] = v
+        triangles.vertices[i] = v
 
     for ind, i in enumerate(triangles.indices):
-        v1 = triangles.vertices[i[0]][:3]
-        v2 = triangles.vertices[i[1]][:3]
-        v3 = triangles.vertices[i[2]][:3]
+        v1 = triangles.vertices[i[0]]
+        v2 = triangles.vertices[i[1]]
+        v3 = triangles.vertices[i[2]]
         triangles.cull_flags[ind] = np.cross((v2 - v1), (v3 - v1)).dot(v1) > 0
 
     for i, v in enumerate(triangles.vertices):  # transform vertexes to screen space
-        triangles.vertices[i][:3] = cst.transform(v[:3])
+        triangles.vertices[i] = cst.transform(v)
 
     for ind, i in enumerate(triangles.indices):
         if not triangles.cull_flags[ind]:
             v1 = triangles.vertices[i[0]]
             v2 = triangles.vertices[i[1]]
             v3 = triangles.vertices[i[2]]
-            gfx.draw_textured_triangle(v1, v2, v3, surf)
+            gfx.draw_triangle(v1, v2, v3, colors[ind])
 
 
 def main():
