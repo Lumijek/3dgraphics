@@ -1,6 +1,27 @@
 import numpy as np
 
+class Vertex:
+    def __init__(self, pos, tc=None):
+        if type(pos) != type(np.array(1)):
+            self.pos = pos.pos.copy()
+            self.tc = pos.tc.copy()
+        else:
+            self.pos = pos
+            self.tc = tc
 
+    def __add__(self, other):
+        return Vertex(self.pos + other.pos, self.tc + other.tc)
+    def __sub__(self, other):
+        return Vertex(self.pos - other.pos, self.tc - other.tc)
+    def __mul__(self, other):
+        return Vertex(self.pos * other, self.tc * other)
+    def __truediv__(self, other):
+        return Vertex(self.pos / other, self.tc / other)
+
+    def np(self):
+        return np.hstack((self.pos, self.tc))
+
+        
 class IndexedLineList:
     def __init__(self, vertices, indices):
         self.vertices = vertices
