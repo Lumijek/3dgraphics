@@ -6,19 +6,20 @@ import pygame
 
 from graphics import Graphics
 from matrix import *
+import pipeline
 from spaces import CubeScreenTransformer
 from shapes import Cube, CubeFolded, CubeFoldedWrapped, CubeSkinned
-from pygame.gfxdraw import pixel
+
 
 WIDTH, HEIGHT = 900, 900
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
+surf = pygame.image.load("images/dice_skin.png").convert_alpha()
 font = pygame.font.SysFont("Arial", 18, bold=True)
-screen.fill("RED")
 gfx = Graphics(screen)
-cst = CubeScreenTransformer(WIDTH, HEIGHT)
 cube = CubeSkinned(1)
-
+pl = pipeline.Pipeline(gfx, WIDTH, HEIGHT)
+pl.texture = surf
 
 def wrap_angle(theta):
     modded = np.fmod(theta, 2 * np.pi)
@@ -33,34 +34,12 @@ def fps_counter(screen, clock, font):
     fps_t = font.render(fps, 1, pygame.Color("RED"))
     screen.blit(fps_t, (4, 2))
 
-surf = pygame.image.load("images/dice_skin.png").convert_alpha()
-print(surf.get_width(), surf.get_height())
-
-def compose_frame(screen, cube, theta_x, theta_y, theta_z, offset_z):
+def draw(screen, cube, theta_x, theta_y, theta_z, offset_z):
     triangles = cube.get_textured_triangles()
-
     rot_matrix = rotation_x(theta_x) @ rotation_y(theta_y) @ rotation_z(theta_z)
-
-    for i, v in enumerate(triangles.vertices):
-        v = rot_matrix.dot(v[:3])
-        v += [0, 0, offset_z]
-        triangles.vertices[i][:3] = v
-
-    for ind, i in enumerate(triangles.indices):
-        v1 = triangles.vertices[i[0]][:3]
-        v2 = triangles.vertices[i[1]][:3]
-        v3 = triangles.vertices[i[2]][:3]
-        triangles.cull_flags[ind] = np.cross((v2 - v1), (v3 - v1)).dot(v1) > 0
-
-    for i, v in enumerate(triangles.vertices):  # transform vertexes to screen space
-        triangles.vertices[i][:3] = cst.transform(v[:3])
-
-    for ind, i in enumerate(triangles.indices):
-        if not triangles.cull_flags[ind]:
-            v1 = triangles.vertices[i[0]]
-            v2 = triangles.vertices[i[1]]
-            v3 = triangles.vertices[i[2]]
-            gfx.draw_textured_triangle(v1, v2, v3, surf)
+    pl.bind_rotation(rot_matrix)
+    pl.bind_translation([0, 0, offset_z])
+    pl.draw(triangles)
 
 
 def main():
@@ -71,10 +50,13 @@ def main():
 
     theta = np.pi
     offset_z = 2
-    theta_x = 0.0
-    theta_y = 0.0
-    theta_z = 0.0
+    theta_x = 0
+    theta_y = 0
+    theta_z = 0
+    previous_time = time.perf_counter()
     while True:
+        dt = time.perf_counter() - previous_time
+        previous_time = time.perf_counter()
         for event in pygame.event.get():
             keys = pygame.key.get_pressed()
             if event.type == pygame.QUIT:
@@ -100,7 +82,7 @@ def main():
         screen.fill((0, 0, 0))
         fps_counter(screen, clock, font)
 
-        compose_frame(screen, cube, theta_x, theta_y, theta_z, offset_z)
+        draw(screen, cube, theta_x, theta_y, theta_z, offset_z)
         pygame.display.update()
         clock.tick(fps)
 

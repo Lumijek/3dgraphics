@@ -13,7 +13,6 @@ class IndexedTriangleList:
         self.indices = indices
         self.cull_flags = np.full(indices.shape[0], False)
 
-
 class Cube:
     def __init__(self, size, origin):  # size is length of 1 side
         self.origin = origin
