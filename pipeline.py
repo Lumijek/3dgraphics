@@ -1,6 +1,7 @@
 import numpy as np
 from spaces import CubeScreenTransformer
 import pygame
+import sys
 
 class Pipeline:
 	def __init__(self, gfx, width, height):
@@ -17,7 +18,11 @@ class Pipeline:
 		self.translation = translation_in
 
 	def bind_texture(self, texture_in):
-		self.texture = texture
+		self.texture = texture_in
+		self.tex_width = self.texture.get_width()
+		self.tex_height = self.texture.get_height()
+		self.tex_clamp_x = self.tex_width - 1
+		self.tex_clamp_y = self.tex_height - 1
 
 	def process_vertices(self, vertices, indices):
 		vertices_out = vertices.copy()
@@ -71,7 +76,6 @@ class Pipeline:
 				self.draw_flat_bottom_textured_triangle(v0, vi, v1)
 				self.draw_flat_top_textured_triangle(vi, v1, v2)
 
-
 	def draw_flat_top_textured_triangle(self, v0, v1, v2):
 		m0 = (v2[0] - v0[0]) / (v2[1] - v0[1])
 		m1 = (v2[0] - v1[0]) / (v2[1] - v1[1])
@@ -91,11 +95,6 @@ class Pipeline:
 		tcEdgeL = tcEdgeL + np.arange(0, y_end - y_start)[:, None] * tcEdgeStepL
 		tcEdgeR = tcEdgeR + np.arange(0, y_end - y_start)[:, None] * tcEdgeStepR
 
-		tex_width = self.texture.get_width()
-		tex_height = self.texture.get_height()
-		tex_clamp_x = tex_width - 1
-		tex_clamp_y = tex_height - 1
-
 		px0 = m0 * (np.arange(y_start, y_end) + 0.5 - v0[1]) + v0[0]
 		px1 = m1 * (np.arange(y_start, y_end) + 0.5 - v1[1]) + v1[0]
 
@@ -108,14 +107,7 @@ class Pipeline:
 
 		surf = pygame.surfarray.pixels3d(self.gfx.screen)
 		tex_surf = pygame.surfarray.pixels3d(self.texture)
-		for i, y in enumerate(range(y_start, y_end)):
-			t_pixel = tc[i] + np.arange(0, x_end[i] - x_start[i])[:, None] * tc_scan_step[i]
-			t_pixel[:, 0] = t_pixel[:, 0] * tex_width % tex_clamp_x
-			t_pixel[:, 1] = t_pixel[:, 1] * tex_height % tex_clamp_y
-			t_pixel = t_pixel.astype(int)
-			surf[x_start[i]:x_end[i], y] = tex_surf[t_pixel[:, 0], t_pixel[:, 1]]
-		del surf
-		del tex_surf
+		self.render(y_start, y_end, x_start, x_end, tc, tc_scan_step)
 
 	def draw_flat_bottom_textured_triangle(self, v0, v1, v2):
 		m0 = (v1[0] - v0[0]) / (v1[1] - v0[1])
@@ -137,11 +129,6 @@ class Pipeline:
 		tcEdgeL = tcEdgeL + np.arange(0, y_end - y_start)[:, None] * tcEdgeStepL
 		tcEdgeR = tcEdgeR + np.arange(0, y_end - y_start)[:, None] * tcEdgeStepR
 
-		tex_width = self.texture.get_width()
-		tex_height = self.texture.get_height()
-		tex_clamp_x = tex_width - 1
-		tex_clamp_y = tex_height - 1
-
 		px0 = m0 * (np.arange(y_start, y_end) + 0.5 - v0[1]) + v0[0]
 		px1 = m1 * (np.arange(y_start, y_end) + 0.5 - v0[1]) + v0[0]
 
@@ -151,12 +138,15 @@ class Pipeline:
 		tc_scan_step = (tcEdgeR - tcEdgeL) / (px1 - px0)[:, None]
 
 		tc = tcEdgeL + tc_scan_step * (x_start + 0.5 - px0)[:, None]
+		self.render(y_start, y_end, x_start, x_end, tc, tc_scan_step)
+
+	def render(self, y_start, y_end, x_start, x_end, tc, tc_scan_step):
 		surf = pygame.surfarray.pixels3d(self.gfx.screen)
 		tex_surf = pygame.surfarray.pixels3d(self.texture)
 		for i, y in enumerate(range(y_start, y_end)):
 			t_pixel = tc[i] + np.arange(0, x_end[i] - x_start[i])[:, None] * tc_scan_step[i]
-			t_pixel[:, 0] = t_pixel[:, 0] * tex_width  % tex_clamp_x
-			t_pixel[:, 1] = t_pixel[:, 1] * tex_height % tex_clamp_y
+			t_pixel[:, 0] = t_pixel[:, 0] * self.tex_width  % self.tex_clamp_x
+			t_pixel[:, 1] = t_pixel[:, 1] * self.tex_height % self.tex_clamp_y
 			t_pixel = t_pixel.astype(int)
 			surf[x_start[i]:x_end[i], y] = tex_surf[t_pixel[:, 0], t_pixel[:, 1]]
 		del surf

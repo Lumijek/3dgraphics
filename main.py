@@ -19,7 +19,7 @@ font = pygame.font.SysFont("Arial", 18, bold=True)
 gfx = Graphics(screen)
 cube = CubeSkinned(1)
 pl = pipeline.Pipeline(gfx, WIDTH, HEIGHT)
-pl.texture = surf
+pl.bind_texture(surf)
 
 def wrap_angle(theta):
     modded = np.fmod(theta, 2 * np.pi)
