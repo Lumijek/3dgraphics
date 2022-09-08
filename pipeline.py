@@ -4,17 +4,20 @@ import pygame
 import sys
 from copy import copy, deepcopy
 from shapes import Vertex
+from multiprocess import Process
 
 
 class Pipeline:
-    def __init__(self, gfx, width, height):
+    def __init__(self, gfx, effect, width, height):
         self.gfx = gfx
         self.cst = CubeScreenTransformer(width, height)
+        self.effect = effect
+        self.Vertex = self.effect.Vertex
 
     def draw(self, itl):
         vertices = []
         for i in range(len(itl.vertices)):
-            vertices.append(Vertex(itl.vertices[i, :3], itl.vertices[i, 3:]))
+            vertices.append(self.Vertex(itl.vertices[i, :3], itl.vertices[i, 3:]))
         self.process_vertices(vertices, itl.indices)
 
     def bind_rotation(self, rotation_in):
@@ -43,6 +46,8 @@ class Pipeline:
             v1 = vertices[i[1]].pos
             v2 = vertices[i[2]].pos
             if np.cross((v1 - v0), (v2 - v0)).dot(v0) <= 0:
+                # p = Process(target=self.process_triangle, args=(deepcopy(vertices[i[0]]), deepcopy(vertices[i[1]]),deepcopy(vertices[i[2]]),))
+                # p.start()
                 self.process_triangle(
                     deepcopy(vertices[i[0]]),
                     deepcopy(vertices[i[1]]),
@@ -88,16 +93,16 @@ class Pipeline:
 
     def draw_flat_top_textured_triangle(self, it0, it1, it2):
         delta_y = it2.pos[1] - it0.pos[1]
-        dit0 = Vertex(it2 - it0) / delta_y
-        dit1 = Vertex(it2 - it1) / delta_y
+        dit0 = self.Vertex(it2 - it0) / delta_y
+        dit1 = self.Vertex(it2 - it1) / delta_y
 
         itEdge1 = deepcopy(it1)
         self.draw_flat_textured_triangle(it0, it1, it2, dit0, dit1, itEdge1)
 
     def draw_flat_bottom_textured_triangle(self, it0, it1, it2):
         delta_y = it2.pos[1] - it0.pos[1]
-        dit0 = Vertex(it1 - it0) / delta_y
-        dit1 = Vertex(it2 - it0) / delta_y
+        dit0 = self.Vertex(it1 - it0) / delta_y
+        dit1 = self.Vertex(it2 - it0) / delta_y
 
         itEdge1 = deepcopy(it0)
         self.draw_flat_textured_triangle(it0, it1, it2, dit0, dit1, itEdge1)
@@ -125,14 +130,8 @@ class Pipeline:
         surf = pygame.surfarray.pixels3d(self.gfx.screen)
         tex_surf = pygame.surfarray.pixels3d(self.texture)
         for i, y in enumerate(range(y_start, y_end)):
-            t_pixel = (
-                iLine[i, 3:]
-                + np.arange(0, x_end[i] - x_start[i])[:, None] * diLine[i, 3:]
-            )
-            t_pixel[:, 0] = t_pixel[:, 0] * self.tex_width % self.tex_clamp_x
-            t_pixel[:, 1] = t_pixel[:, 1] * self.tex_height % self.tex_clamp_y
-            t_pixel = t_pixel.astype(int)
-            surf[x_start[i] : x_end[i], y] = tex_surf[t_pixel[:, 0], t_pixel[:, 1]]
+            t_pixel = iLine[i, 3:] + np.arange(0, x_end[i] - x_start[i])[:, None] * diLine[i, 3:]
+            surf[x_start[i] : x_end[i], y] = self.effect.ps.pixel(t_pixel)
 
         del surf
         del tex_surf

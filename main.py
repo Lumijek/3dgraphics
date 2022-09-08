@@ -9,6 +9,7 @@ from matrix import *
 import pipeline
 from spaces import CubeScreenTransformer
 from shapes import Cube, CubeFolded, CubeFoldedWrapped, CubeSkinned
+from texture_effect import TextureEffect
 
 
 WIDTH, HEIGHT = 900, 900
@@ -18,7 +19,9 @@ surf = pygame.image.load("images/dice_skin.png").convert_alpha()
 font = pygame.font.SysFont("Arial", 18, bold=True)
 gfx = Graphics(screen)
 cube = CubeSkinned(1)
-pl = pipeline.Pipeline(gfx, WIDTH, HEIGHT)
+te = TextureEffect()
+pl = pipeline.Pipeline(gfx, te, WIDTH, HEIGHT)
+pl.effect.ps.bind_texture(surf)
 pl.bind_texture(surf)
 
 
@@ -47,11 +50,11 @@ def draw(screen, cube, theta_x, theta_y, theta_z, offset_z):
 def main():
     clock = pygame.time.Clock()
 
-    fps = 120
+    fps = 240
     dt = 1 / fps
 
     theta = np.pi
-    offset_z = 2
+    offset_z = 1.2
     theta_x = 0
     theta_y = 0
     theta_z = 0
