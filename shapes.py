@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class Vertex:
     def __init__(self, pos, tc=None):
         if type(pos) != type(np.array(1)):
@@ -11,17 +12,20 @@ class Vertex:
 
     def __add__(self, other):
         return Vertex(self.pos + other.pos, self.tc + other.tc)
+
     def __sub__(self, other):
         return Vertex(self.pos - other.pos, self.tc - other.tc)
+
     def __mul__(self, other):
         return Vertex(self.pos * other, self.tc * other)
+
     def __truediv__(self, other):
         return Vertex(self.pos / other, self.tc / other)
 
     def np(self):
         return np.hstack((self.pos, self.tc))
 
-        
+
 class IndexedLineList:
     def __init__(self, vertices, indices):
         self.vertices = vertices
@@ -33,6 +37,7 @@ class IndexedTriangleList:
         self.vertices = vertices
         self.indices = indices
         self.cull_flags = np.full(indices.shape[0], False)
+
 
 class Cube:
     def __init__(self, size, origin):  # size is length of 1 side
@@ -121,6 +126,7 @@ class Cube:
 
         return IndexedTriangleList(self.tverts.copy(), triangles)
 
+
 class CubeFolded:
     def __init__(self, size):  # size is length of 1 side
         self.calculate_vertices(size)
@@ -157,8 +163,6 @@ class CubeFolded:
         self.tc[12] = [1, 1]
         self.vertices[13] = [side, -side, side]
         self.tc[13] = [1, 0]
-
-
 
         self.tverts = np.zeros(14 * 5).reshape(14, 5)
         for i in range(len(self.vertices)):
@@ -221,6 +225,7 @@ class CubeFolded:
         )
 
         return IndexedTriangleList(self.tverts.copy(), triangles)
+
 
 class CubeFoldedWrapped:
     def __init__(self, size):  # size is length of 1 side
@@ -259,8 +264,6 @@ class CubeFoldedWrapped:
         self.vertices[13] = [side, -side, side]
         self.tc[13] = [-1, 2]
 
-
-
         self.tverts = np.zeros(14 * 5).reshape(14, 5)
         for i in range(len(self.vertices)):
             self.tverts[i] = np.hstack((self.vertices[i], self.tc[i]))
@@ -322,6 +325,7 @@ class CubeFoldedWrapped:
         )
 
         return IndexedTriangleList(self.tverts.copy(), triangles)
+
 
 class CubeSkinned:
     def __init__(self, size):  # size is length of 1 side
@@ -361,8 +365,6 @@ class CubeSkinned:
         self.tc[13] = [-1, 2]
         self.tc[:, 0] = (self.tc[:, 0] + 1) / 3
         self.tc[:, 1] = self.tc[:, 1] / 4
-
-
 
         self.tverts = np.zeros(14 * 5).reshape(14, 5)
         for i in range(len(self.vertices)):

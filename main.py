@@ -21,6 +21,7 @@ cube = CubeSkinned(1)
 pl = pipeline.Pipeline(gfx, WIDTH, HEIGHT)
 pl.bind_texture(surf)
 
+
 def wrap_angle(theta):
     modded = np.fmod(theta, 2 * np.pi)
     if modded > np.pi:
@@ -33,6 +34,7 @@ def fps_counter(screen, clock, font):
     fps = str(int(clock.get_fps()))
     fps_t = font.render(fps, 1, pygame.Color("RED"))
     screen.blit(fps_t, (4, 2))
+
 
 def draw(screen, cube, theta_x, theta_y, theta_z, offset_z):
     triangles = cube.get_textured_triangles()

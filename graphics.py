@@ -4,6 +4,8 @@ import sys
 import math
 from pprint import pprint
 from shapes import Vertex
+
+
 class Graphics:
     def __init__(self, screen):
         self.screen = screen
